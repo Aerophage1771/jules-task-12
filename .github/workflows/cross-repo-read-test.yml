@@ -1,0 +1,25 @@
+name: Cross Repo Read Test
+
+on:
+  push:
+    paths:
+      - '.cross-repo-read-test-trigger'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test jules-ops private read
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CODE="$(curl -sS -o response.json -w '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' 'https://api.github.com/repos/Aerophage1771/jules-ops/contents/README.md')"
+          echo "http=$CODE"
+          head -c 300 response.json || true
+          echo
+          test "$CODE" = '200'
